@@ -2824,9 +2824,11 @@ function renderHome() {
 
   document.getElementById('app-content').innerHTML = `
     <!-- SECTION 1: HERO -->
-    <section style="position:relative;height:90vh;min-height:500px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:url('https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1600') center/cover no-repeat;">
-      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.45);"></div>
-      <div style="position:relative;z-index:1;text-align:center;padding:0 24px;max-width:700px;">
+    <section style="position:relative;height:90vh;min-height:520px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:url('https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=2200&q=85') center/cover no-repeat;">
+      <div style="position:absolute;inset:0;background:linear-gradient(135deg, rgba(10,10,10,0.78) 0%, rgba(10,10,10,0.42) 55%, rgba(10,10,10,0.65) 100%);"></div>
+      <div style="position:absolute;inset:0;background:radial-gradient(circle at 82% 28%, rgba(200,169,110,0.22) 0%, transparent 55%);pointer-events:none;"></div>
+      <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:var(--color-gold);z-index:1;"></div>
+      <div style="position:relative;z-index:2;text-align:center;padding:0 24px;max-width:720px;">
         <h1 style="font-family:'Playfair Display',serif;font-size:clamp(36px,6vw,64px);color:#fff;margin-bottom:16px;line-height:1.1;">The New Collection</h1>
         <p style="font-size:18px;color:rgba(255,255,255,0.8);margin-bottom:36px;">Curated styles for every story</p>
         <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:28px;">
