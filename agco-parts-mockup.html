@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AGCO Parts Portal — UI Mockup</title>
+<style>
+  :root{
+    --red:#C8102E;
+    --red-dark:#8f0a20;
+    --charcoal:#2b2d33;
+    --ink:#1c1e22;
+    --paper:#f5f6f8;
+    --line:#dfe2e6;
+    --muted:#6b7178;
+    --green:#1b7a43;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);}
+  .mock-banner{
+    background:var(--ink); color:#fff; text-align:center; font-size:12px;
+    padding:6px 12px; letter-spacing:.04em;
+  }
+  header.top{
+    background:#fff; border-bottom:1px solid var(--line);
+    display:flex; align-items:center; gap:16px; padding:12px 20px; flex-wrap:wrap;
+  }
+  .logo{font-weight:800; font-size:20px; color:var(--red); letter-spacing:.02em;}
+  .logo span{color:var(--charcoal);}
+  nav.tabs{display:flex; gap:4px; margin-left:12px; flex:1;}
+  nav.tabs button{
+    background:none; border:none; padding:10px 12px; font-size:13px; color:var(--muted);
+    cursor:pointer; border-radius:6px 6px 0 0; font-weight:600; white-space:nowrap;
+  }
+  nav.tabs button.active{color:var(--red); background:var(--paper);}
+  .top-actions{display:flex; align-items:center; gap:12px; font-size:13px; margin-left:auto;}
+  .cart-pill{
+    background:var(--red); color:#fff; border-radius:20px; padding:6px 12px;
+    display:flex; gap:6px; align-items:center; font-weight:600; cursor:pointer; white-space:nowrap;
+  }
+  .badge{background:#fff; color:var(--red); border-radius:10px; padding:0 6px; font-size:12px;}
+  main{max-width:1180px; margin:0 auto; padding:28px;}
+  .screen{display:none;}
+  .screen.active{display:block; animation:fade .15s ease;}
+  @keyframes fade{from{opacity:0} to{opacity:1}}
+
+  /* Home */
+  .hero{
+    background:linear-gradient(120deg, var(--charcoal), #14161a);
+    color:#fff; border-radius:14px; padding:48px; display:flex; justify-content:space-between; align-items:center; gap:24px;
+  }
+  .hero h1{font-size:32px; margin:0 0 12px; max-width:520px;}
+  .hero p{color:#c7cad0; max-width:480px; margin:0 0 20px;}
+  .btn{
+    background:var(--red); color:#fff; border:none; padding:12px 20px; border-radius:8px;
+    font-weight:700; font-size:14px; cursor:pointer;
+  }
+  .btn:hover{background:var(--red-dark);}
+  .btn.outline{background:transparent; border:1.5px solid #fff; color:#fff;}
+  .btn.ghost{background:transparent; border:1.5px solid var(--line); color:var(--ink);}
+  .hero-diagram{
+    width:260px; height:160px; border:2px dashed #565b63; border-radius:10px;
+    display:flex; align-items:center; justify-content:center; color:#8b909a; font-size:12px; flex-shrink:0;
+  }
+  .value-props{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-top:28px;}
+  .vp-card{background:#fff; border:1px solid var(--line); border-radius:10px; padding:18px; text-align:center;}
+  .vp-card .ic{font-size:22px; margin-bottom:8px;}
+  .vp-card h4{margin:0 0 6px; font-size:14px;}
+  .vp-card p{margin:0; font-size:12px; color:var(--muted);}
+  .brand-row{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-top:28px;}
+  .brand-tile{
+    background:#fff; border:1px solid var(--line); border-radius:10px; padding:20px;
+    text-align:center; font-weight:700; color:var(--charcoal); cursor:pointer;
+  }
+  .brand-tile:hover{border-color:var(--red); color:var(--red);}
+  .section-title{font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-weight:700; margin:34px 0 10px;}
+
+  /* Shop by machine */
+  .card{background:#fff; border:1px solid var(--line); border-radius:12px; padding:24px;}
+  .search-grid{display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:14px; align-items:end;}
+  .field label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px; font-weight:600;}
+  .field select, .field input{
+    width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:7px; font-size:14px;
+  }
+  .cat-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:20px;}
+  .cat-card{
+    background:#fff; border:1px solid var(--line); border-radius:10px; padding:20px; cursor:pointer;
+    display:flex; gap:14px; align-items:center;
+  }
+  .cat-card:hover{border-color:var(--red);}
+  .cat-ic{
+    width:44px; height:44px; border-radius:8px; background:#fdecef; color:var(--red);
+    display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0;
+  }
+  .cat-card h4{margin:0 0 4px; font-size:14px;}
+  .cat-card p{margin:0; font-size:12px; color:var(--muted);}
+  .breadcrumb{font-size:13px; color:var(--muted); margin-bottom:16px;}
+  .breadcrumb b{color:var(--ink);}
+
+  /* Parts book */
+  .book-layout{display:grid; grid-template-columns:1.1fr 1.4fr; gap:24px;}
+  .diagram-panel{background:#fff; border:1px solid var(--line); border-radius:12px; padding:20px;}
+  svg.diagram{width:100%; height:auto;}
+  .callout{fill:#fff; stroke:var(--red); stroke-width:2;}
+  .callout-text{font:700 12px sans-serif; fill:var(--red);}
+  table.parts{width:100%; border-collapse:collapse; font-size:13px;}
+  table.parts th{
+    text-align:left; font-size:11px; text-transform:uppercase; color:var(--muted);
+    border-bottom:1px solid var(--line); padding:8px 6px;
+  }
+  table.parts td{padding:10px 6px; border-bottom:1px solid var(--line); vertical-align:middle;}
+  .ref-chip{
+    width:22px; height:22px; border-radius:50%; border:2px solid var(--red); color:var(--red);
+    display:inline-flex; align-items:center; justify-content:center; font-size:11px; font-weight:700;
+  }
+  .qty-input{width:52px; padding:6px; border:1px solid var(--line); border-radius:6px; text-align:center;}
+  .add-btn{
+    background:var(--charcoal); color:#fff; border:none; padding:7px 12px; border-radius:6px;
+    font-size:12px; font-weight:700; cursor:pointer;
+  }
+  .add-btn:hover{background:var(--red);}
+  .price{font-weight:700;}
+  .stock-ok{color:var(--green); font-size:11px; font-weight:700;}
+
+  /* Quick order */
+  .qo-toolbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;}
+  .qo-toolbar h3{margin:0; font-size:16px;}
+  .dropzone{
+    border:2px dashed var(--line); border-radius:10px; padding:20px; text-align:center; color:var(--muted);
+    font-size:13px; margin-bottom:20px; background:#fbfbfc;
+  }
+  table.qo{width:100%; border-collapse:collapse;}
+  table.qo th{text-align:left; font-size:11px; color:var(--muted); text-transform:uppercase; padding:8px 6px; border-bottom:1px solid var(--line);}
+  table.qo td{padding:8px 6px; border-bottom:1px solid var(--line);}
+  table.qo input{width:100%; padding:8px; border:1px solid var(--line); border-radius:6px; font-size:13px;}
+  .row-remove{color:var(--muted); cursor:pointer; font-size:16px; background:none; border:none;}
+  .add-row-btn{
+    margin-top:12px; background:none; border:1.5px dashed var(--line); color:var(--muted);
+    padding:10px; width:100%; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;
+  }
+  .add-row-btn:hover{border-color:var(--red); color:var(--red);}
+
+  /* Cart */
+  .cart-layout{display:grid; grid-template-columns:2fr 1fr; gap:24px;}
+  .cart-line{display:flex; gap:14px; padding:16px 0; border-bottom:1px solid var(--line); align-items:center;}
+  .cart-thumb{width:56px; height:56px; border-radius:8px; background:var(--paper); border:1px solid var(--line); flex-shrink:0;}
+  .cart-line .info{flex:1;}
+  .cart-line .info h4{margin:0 0 4px; font-size:14px;}
+  .cart-line .info p{margin:0; font-size:12px; color:var(--muted);}
+  .summary-row{display:flex; justify-content:space-between; font-size:14px; margin:10px 0;}
+  .summary-row.total{font-weight:800; font-size:16px; border-top:1px solid var(--line); padding-top:14px; margin-top:14px;}
+  select.mini{padding:8px; border:1px solid var(--line); border-radius:6px; font-size:13px; width:100%;}
+</style>
+</head>
+<body>
+
+<div class="mock-banner">MOCKUP / PROTOTYPE ONLY — not affiliated with or reflective of the live parts.agcocorp.com site — for design exploration in this repo</div>
+
+<header class="top">
+  <div class="logo">AGCO<span>PARTS</span></div>
+  <nav class="tabs" id="tabnav">
+    <button data-screen="home" class="active">Home</button>
+    <button data-screen="machine">Shop by Machine</button>
+    <button data-screen="book">Parts Book</button>
+    <button data-screen="quickorder">Quick Order</button>
+    <button data-screen="cart">Cart</button>
+  </nav>
+  <div class="top-actions">
+    <span>Acct #4471</span>
+    <div class="cart-pill" onclick="showScreen('cart')">🛒 Cart <span class="badge">3</span></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- HOME -->
+  <section class="screen active" id="home">
+    <div class="hero">
+      <div>
+        <h1>Genuine Parts. Engineered to Fit, Built to Last.</h1>
+        <p>Search by machine, browse parts books with exploded diagrams, or upload a quick-order CSV — for Massey Ferguson, Fendt, Valtra and Challenger equipment.</p>
+        <div style="display:flex; gap:12px;">
+          <button class="btn" onclick="showScreen('machine')">Shop by Machine</button>
+          <button class="btn outline" onclick="showScreen('quickorder')">Quick Order Pad</button>
+        </div>
+      </div>
+      <div class="hero-diagram">exploded-view diagram placeholder</div>
+    </div>
+
+    <div class="value-props">
+      <div class="vp-card"><div class="ic">✅</div><h4>Genuine AGCO Parts</h4><p>Engineered to OEM spec</p></div>
+      <div class="vp-card"><div class="ic">🛡️</div><h4>12-Month Warranty</h4><p>On all genuine parts</p></div>
+      <div class="vp-card"><div class="ic">🌍</div><h4>Global Dealer Network</h4><p>Local pickup & delivery</p></div>
+      <div class="vp-card"><div class="ic">🚚</div><h4>Fast Fulfillment</h4><p>Real-time stock visibility</p></div>
+    </div>
+
+    <div class="section-title">Shop by Brand</div>
+    <div class="brand-row">
+      <div class="brand-tile" onclick="showScreen('machine')">Massey Ferguson</div>
+      <div class="brand-tile" onclick="showScreen('machine')">Fendt</div>
+      <div class="brand-tile" onclick="showScreen('machine')">Valtra</div>
+      <div class="brand-tile" onclick="showScreen('machine')">Challenger</div>
+    </div>
+  </section>
+
+  <!-- SHOP BY MACHINE -->
+  <section class="screen" id="machine">
+    <div class="breadcrumb"><b>Home</b> &nbsp;›&nbsp; Shop by Machine</div>
+    <div class="card">
+      <div class="search-grid">
+        <div class="field"><label>Brand</label>
+          <select><option>Massey Ferguson</option><option>Fendt</option><option>Valtra</option><option>Challenger</option></select>
+        </div>
+        <div class="field"><label>Model</label><input placeholder="e.g. 8S.245"></div>
+        <div class="field"><label>Serial Number (optional)</label><input placeholder="e.g. HN12345"></div>
+        <button class="btn" onclick="showScreen('book')">Find Parts</button>
+      </div>
+    </div>
+
+    <div class="section-title">Massey Ferguson 8S.245 — Parts Categories</div>
+    <div class="cat-grid">
+      <div class="cat-card" onclick="showScreen('book')"><div class="cat-ic">⚙️</div><div><h4>Engine</h4><p>128 parts</p></div></div>
+      <div class="cat-card" onclick="showScreen('book')"><div class="cat-ic">🔧</div><div><h4>Hydraulics</h4><p>94 parts</p></div></div>
+      <div class="cat-card" onclick="showScreen('book')"><div class="cat-ic">🔌</div><div><h4>Electrical</h4><p>67 parts</p></div></div>
+      <div class="cat-card" onclick="showScreen('book')"><div class="cat-ic">🚜</div><div><h4>Body &amp; Cab</h4><p>52 parts</p></div></div>
+      <div class="cat-card" onclick="showScreen('book')"><div class="cat-ic">🧰</div><div><h4>Attachments</h4><p>38 parts</p></div></div>
+      <div class="cat-card" onclick="showScreen('book')"><div class="cat-ic">🌀</div><div><h4>Filters</h4><p>21 parts</p></div></div>
+    </div>
+  </section>
+
+  <!-- PARTS BOOK -->
+  <section class="screen" id="book">
+    <div class="breadcrumb"><b>Home</b> › Shop by Machine › MF 8S.245 › Engine › <b>Air Filter Assembly</b></div>
+    <div class="book-layout">
+      <div class="diagram-panel">
+        <svg class="diagram" viewBox="0 0 320 260">
+          <rect x="30" y="20" width="260" height="200" rx="10" fill="#fafafa" stroke="#dfe2e6"/>
+          <circle class="callout" cx="90" cy="60" r="12"/><text class="callout-text" x="86" y="64">1</text>
+          <circle class="callout" cx="180" cy="50" r="12"/><text class="callout-text" x="176" y="54">2</text>
+          <circle class="callout" cx="250" cy="90" r="12"/><text class="callout-text" x="246" y="94">3</text>
+          <circle class="callout" cx="110" cy="150" r="12"/><text class="callout-text" x="106" y="154">4</text>
+          <circle class="callout" cx="220" cy="180" r="12"/><text class="callout-text" x="216" y="184">5</text>
+          <line x1="90" y1="72" x2="90" y2="110" stroke="#c7cad0"/>
+          <line x1="180" y1="62" x2="150" y2="110" stroke="#c7cad0"/>
+          <line x1="250" y1="102" x2="200" y2="130" stroke="#c7cad0"/>
+        </svg>
+        <p style="font-size:12px; color:var(--muted); text-align:center;">Exploded view — Air Filter Assembly (diagram placeholder)</p>
+      </div>
+      <div>
+        <table class="parts">
+          <thead><tr><th>Ref</th><th>Part #</th><th>Description</th><th>Price</th><th>Stock</th><th>Qty</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><span class="ref-chip">1</span></td><td>3389852M1</td><td>Air Filter, Primary</td><td class="price">$64.20</td><td><span class="stock-ok">In Stock</span></td><td><input class="qty-input" type="number" value="1" min="1"></td><td><button class="add-btn" onclick="bumpCart()">Add</button></td></tr>
+            <tr><td><span class="ref-chip">2</span></td><td>3389853M1</td><td>Air Filter, Secondary</td><td class="price">$41.75</td><td><span class="stock-ok">In Stock</span></td><td><input class="qty-input" type="number" value="1" min="1"></td><td><button class="add-btn" onclick="bumpCart()">Add</button></td></tr>
+            <tr><td><span class="ref-chip">3</span></td><td>4224510M1</td><td>Filter Housing Cover</td><td class="price">$88.00</td><td><span class="stock-ok">In Stock</span></td><td><input class="qty-input" type="number" value="1" min="1"></td><td><button class="add-btn" onclick="bumpCart()">Add</button></td></tr>
+            <tr><td><span class="ref-chip">4</span></td><td>1889917M1</td><td>Intake Hose Clamp</td><td class="price">$6.40</td><td><span class="stock-ok">In Stock</span></td><td><input class="qty-input" type="number" value="2" min="1"></td><td><button class="add-btn" onclick="bumpCart()">Add</button></td></tr>
+            <tr><td><span class="ref-chip">5</span></td><td>3609816M1</td><td>Dust Ejector Valve</td><td class="price">$23.90</td><td>2 weeks</td><td><input class="qty-input" type="number" value="1" min="1"></td><td><button class="add-btn" onclick="bumpCart()">Add</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUICK ORDER -->
+  <section class="screen" id="quickorder">
+    <div class="breadcrumb"><b>Home</b> › Quick Order Pad</div>
+    <div class="card">
+      <div class="qo-toolbar">
+        <h3>Enter part numbers directly</h3>
+        <button class="btn ghost" onclick="addQoRow()">+ Add Row</button>
+      </div>
+      <div class="dropzone">📄 Drag &amp; drop a CSV of part numbers &amp; quantities here, or <u>browse files</u></div>
+      <table class="qo" id="qoTable">
+        <thead><tr><th style="width:35%">Part Number</th><th style="width:45%">Description (auto-filled)</th><th style="width:12%">Qty</th><th></th></tr></thead>
+        <tbody id="qoBody">
+          <tr><td><input value="3389852M1"></td><td><input value="Air Filter, Primary" disabled></td><td><input value="2" type="number"></td><td><button class="row-remove" onclick="this.closest('tr').remove()">✕</button></td></tr>
+          <tr><td><input placeholder="e.g. 4224510M1"></td><td><input placeholder="—" disabled></td><td><input value="1" type="number"></td><td><button class="row-remove" onclick="this.closest('tr').remove()">✕</button></td></tr>
+          <tr><td><input placeholder="e.g. 1889917M1"></td><td><input placeholder="—" disabled></td><td><input value="1" type="number"></td><td><button class="row-remove" onclick="this.closest('tr').remove()">✕</button></td></tr>
+        </tbody>
+      </table>
+      <button class="add-row-btn" onclick="addQoRow()">+ Add another row</button>
+      <div style="text-align:right; margin-top:20px;">
+        <button class="btn" onclick="showScreen('cart')">Add All to Cart</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CART -->
+  <section class="screen" id="cart">
+    <div class="breadcrumb"><b>Home</b> › Cart</div>
+    <div class="cart-layout">
+      <div class="card">
+        <h3 style="margin-top:0;">Your Cart (3 items)</h3>
+        <div class="cart-line">
+          <div class="cart-thumb"></div>
+          <div class="info"><h4>Air Filter, Primary — 3389852M1</h4><p>Fits: MF 8S.245 · Qty 2</p></div>
+          <div class="price">$128.40</div>
+        </div>
+        <div class="cart-line">
+          <div class="cart-thumb"></div>
+          <div class="info"><h4>Filter Housing Cover — 4224510M1</h4><p>Fits: MF 8S.245 · Qty 1</p></div>
+          <div class="price">$88.00</div>
+        </div>
+        <div class="cart-line">
+          <div class="cart-thumb"></div>
+          <div class="info"><h4>Intake Hose Clamp — 1889917M1</h4><p>Fits: MF 8S.245 · Qty 2</p></div>
+          <div class="price">$12.80</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0;">Order Summary</h3>
+        <div class="field" style="margin-bottom:14px;">
+          <label>Ship-to Dealer</label>
+          <select class="mini"><option>Deloitte Test Dealer — Cedar Rapids, IA</option><option>Fabrikam Ag Supply — Wichita, KS</option></select>
+        </div>
+        <div class="summary-row"><span>Subtotal</span><span>$229.20</span></div>
+        <div class="summary-row"><span>Estimated Shipping</span><span>$14.50</span></div>
+        <div class="summary-row"><span>Tax</span><span>$17.55</span></div>
+        <div class="summary-row total"><span>Total</span><span>$261.25</span></div>
+        <button class="btn" style="width:100%; margin-top:16px;">Proceed to Checkout</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('#tabnav button').forEach(b => b.classList.toggle('active', b.dataset.screen === id));
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+  document.querySelectorAll('#tabnav button').forEach(b => b.addEventListener('click', () => showScreen(b.dataset.screen)));
+
+  function addQoRow(){
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td><input placeholder="e.g. 3609816M1"></td><td><input placeholder="—" disabled></td><td><input value="1" type="number"></td><td><button class="row-remove" onclick="this.closest(\'tr\').remove()">✕</button></td>';
+    document.getElementById('qoBody').appendChild(tr);
+  }
+
+  function bumpCart(){
+    const badge = document.querySelector('.badge');
+    badge.textContent = parseInt(badge.textContent) + 1;
+  }
+</script>
+
+</body>
+</html>
