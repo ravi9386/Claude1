@@ -822,6 +822,90 @@
 
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
   @media (max-width: 860px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* ── HISTORY & RETURN ── */
+  nav a.active {
+    color: var(--cat-yellow);
+    border-bottom-color: var(--cat-yellow);
+  }
+
+  #back-to-top {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    z-index: 200;
+    background: var(--cat-yellow);
+    color: var(--cat-dark);
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 2px;
+    font-size: 1.2rem;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s, transform 0.25s;
+    transform: translateY(10px);
+  }
+
+  #back-to-top.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  #back-to-top:hover {
+    background: var(--cat-yellow-dark);
+  }
+
+  #section-history-bar {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 200;
+    background: var(--cat-dark);
+    border: 2px solid var(--cat-yellow);
+    border-radius: 2px;
+    padding: 6px 14px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #ccc;
+    letter-spacing: 0.5px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s;
+    white-space: nowrap;
+  }
+
+  #section-history-bar.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  #section-history-bar button {
+    background: var(--cat-yellow);
+    color: var(--cat-dark);
+    border: none;
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 3px 10px;
+    margin-left: 10px;
+    cursor: pointer;
+    border-radius: 2px;
+    letter-spacing: 0.5px;
+  }
+
+  #section-history-bar button:hover { background: var(--cat-yellow-dark); }
+
+  @media (max-width: 600px) {
+    #back-to-top { bottom: 80px; }
+  }
 </style>
 </head>
 <body>
@@ -854,7 +938,7 @@
 
 <!-- CONTENTS -->
 <section id="contents" style="padding:0">
-  <div id="contents" style="background: var(--cat-dark); color: white; padding: 60px;">
+  <div id="contents-inner" style="background: var(--cat-dark); color: white; padding: 60px;">
     <div class="section-label" style="color: var(--cat-yellow);">Contents</div>
     <h2 class="section-title" style="color: white;">What We Will Cover</h2>
     <div class="toc-grid">
@@ -1585,6 +1669,13 @@
   </div>
 </section>
 
+<!-- BACK TO TOP & HISTORY BAR -->
+<button id="back-to-top" title="Back to top" aria-label="Back to top">↑</button>
+<div id="section-history-bar" role="status" aria-live="polite">
+  <span id="history-label">Last visited: <strong id="history-section-name"></strong></span>
+  <button id="history-return-btn" tabindex="-1">Return</button>
+</div>
+
 <!-- FOOTER -->
 <footer>
   <div>
@@ -1597,5 +1688,143 @@
   </div>
 </footer>
 
+<script>
+(function () {
+  const NAV_SECTIONS = [
+    { id: 'hero',          label: 'Top' },
+    { id: 'contents',      label: 'Overview' },
+    { id: 'platform',      label: 'Platform' },
+    { id: 'value-drivers', label: 'Value Drivers' },
+    { id: 'goals',         label: '2026 Goals' },
+    { id: 'journey',       label: 'AI Across SDLC' },
+    { id: 'operate',       label: 'Operate Scale' },
+    { id: 'pillars',       label: 'Efficiency Drivers' },
+    { id: 'roadmap',       label: 'Long-Term AI' },
+    { id: 'tools',         label: 'New Tools' },
+    { id: 'appendix',      label: 'Appendix' },
+  ];
+
+  const navLinks   = document.querySelectorAll('nav a[href^="#"]');
+  const backToTop  = document.getElementById('back-to-top');
+  const historyBar = document.getElementById('section-history-bar');
+  const historyName= document.getElementById('history-section-name');
+  const returnBtn  = document.getElementById('history-return-btn');
+
+  let currentSection        = 'hero';
+  let previousSection       = null;
+  let previousLabel         = '';
+  let historyTimer          = null;
+  let suppressNextUpdate    = false;
+
+  // ── Active nav highlight + aria-current ──────────────────────────────
+  function setActiveNav(sectionId) {
+    navLinks.forEach(a => {
+      const href = a.getAttribute('href').slice(1);
+      const isActive = href === sectionId;
+      a.classList.toggle('active', isActive);
+      if (isActive) a.setAttribute('aria-current', 'true');
+      else a.removeAttribute('aria-current');
+    });
+  }
+
+  // ── URL hash update (no scroll) ───────────────────────────────────────
+  function updateHash(id) {
+    history.replaceState(null, '', id === 'hero' ? location.pathname : '#' + id);
+  }
+
+  // ── Show / hide history bar ───────────────────────────────────────────
+  function showHistoryBar(label) {
+    historyName.textContent = label;
+    historyBar.classList.add('visible');
+    returnBtn.removeAttribute('tabindex');
+    clearTimeout(historyTimer);
+    historyTimer = setTimeout(hideHistoryBar, 4000);
+  }
+
+  function hideHistoryBar() {
+    historyBar.classList.remove('visible');
+    returnBtn.setAttribute('tabindex', '-1');
+  }
+
+  // ── Restore section from hash BEFORE observer is set up ──────────────
+  if (location.hash) {
+    const id = location.hash.slice(1);
+    if (NAV_SECTIONS.find(s => s.id === id)) {
+      currentSection = id;
+      setActiveNav(id);
+    }
+  }
+
+  // ── IntersectionObserver ─────────────────────────────────────────────
+  // rootMargin fires when a section's top edge crosses ~15% from the top
+  // of the viewport — reliable even for sections taller than the viewport.
+  const observer = new IntersectionObserver(
+    (entries) => {
+      // When multiple entries fire at once (fast scroll), take the
+      // topmost visible section (lowest NAV_SECTIONS index).
+      const visible = entries
+        .filter(e => e.isIntersecting)
+        .sort((a, b) =>
+          NAV_SECTIONS.findIndex(s => s.id === a.target.id) -
+          NAV_SECTIONS.findIndex(s => s.id === b.target.id)
+        );
+
+      if (!visible.length) return;
+      const id = visible[0].target.id;
+      if (!id || id === currentSection) return;
+
+      if (suppressNextUpdate) {
+        suppressNextUpdate = false;
+        currentSection = id;
+        updateHash(id);
+        setActiveNav(id);
+        return;
+      }
+
+      previousSection = currentSection;
+      previousLabel   = NAV_SECTIONS.find(s => s.id === currentSection)?.label || currentSection;
+      currentSection  = id;
+      updateHash(id);
+      setActiveNav(id);
+
+      if (previousSection && previousSection !== 'hero') {
+        showHistoryBar(previousLabel);
+      } else {
+        hideHistoryBar();
+      }
+    },
+    { threshold: 0, rootMargin: '-10% 0px -85% 0px' }
+  );
+
+  NAV_SECTIONS.forEach(({ id }) => {
+    const el = document.getElementById(id);
+    if (el) observer.observe(el);
+  });
+
+  // ── Return button ─────────────────────────────────────────────────────
+  returnBtn.addEventListener('click', () => {
+    if (previousSection) {
+      suppressNextUpdate = true;
+      const target = document.getElementById(previousSection);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth' });
+        // Move focus to the target section for keyboard/switch users
+        target.setAttribute('tabindex', '-1');
+        target.focus({ preventScroll: true });
+      }
+    }
+    hideHistoryBar();
+  });
+
+  // ── Back-to-top button ────────────────────────────────────────────────
+  window.addEventListener('scroll', () => {
+    backToTop.classList.toggle('visible', window.scrollY > 400);
+  }, { passive: true });
+
+  backToTop.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+</script>
 </body>
 </html>
