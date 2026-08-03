@@ -771,6 +771,44 @@
     #back-to-top:hover { background: #333; }
     #back-to-top:active { transform: scale(0.93); }
 
+    /* ─── History & Return Back Button ──────────────────────────── */
+    #nav-back-btn {
+      position: fixed;
+      bottom: 32px;
+      left: 28px;
+      z-index: 800;
+      background: var(--color-white);
+      color: var(--color-primary);
+      border: 1.5px solid var(--color-border);
+      border-radius: 24px;
+      padding: 10px 18px 10px 14px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(12px);
+      transition: opacity var(--transition-fast), transform var(--transition-fast);
+      white-space: nowrap;
+      max-width: 220px;
+    }
+    #nav-back-btn.visible {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateY(0);
+    }
+    #nav-back-btn:hover { border-color: var(--color-gold); color: var(--color-gold); }
+    #nav-back-btn:active { transform: scale(0.97); }
+    #nav-back-btn .back-label { overflow: hidden; text-overflow: ellipsis; }
+    @media (max-width: 600px) {
+      #nav-back-btn { bottom: 80px; left: 16px; }
+    }
+
     /* ─── Skeleton / Loading Shimmer ─────────────────────────────── */
     .skeleton {
       background: linear-gradient(90deg, #f0eeea 25%, #e8e5e0 50%, #f0eeea 75%);
@@ -1076,6 +1114,10 @@
 </div>
 
 <button id="back-to-top" aria-label="Back to top">&#8593;</button>
+<button id="nav-back-btn" aria-label="Go back to previous page" tabindex="-1" role="navigation">
+  <span class="back-arrow">&#8592;</span>
+  <span class="back-label"></span>
+</button>
 
 <script>
   /* ─── Global State ─────────────────────────────────────────────── */
@@ -1505,6 +1547,65 @@
     btn.addEventListener('click', () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
+  })();
+
+  /* ─── History & Return Navigation ──────────────────────────────── */
+  (function initHistoryNav() {
+    const PAGE_LABELS = {
+      '#/': 'Home', '#/cart': 'Cart', '#/checkout': 'Checkout',
+      '#/wishlist': 'Wishlist', '#/search': 'Search',
+      '#/login': 'Sign In', '#/register': 'Register',
+      '#/account': 'Account', '#/sale': 'Sale',
+    };
+
+    function getLabel(hash) {
+      if (!hash || hash === '#/') return 'Home';
+      if (PAGE_LABELS[hash]) return PAGE_LABELS[hash];
+      if (hash.startsWith('#/category/')) {
+        const slug = hash.replace('#/category/', '');
+        return slug.charAt(0).toUpperCase() + slug.slice(1);
+      }
+      if (hash.startsWith('#/product/')) return 'Product';
+      if (hash.startsWith('#/order/')) return 'Order';
+      return 'Back';
+    }
+
+    const backBtn   = document.getElementById('nav-back-btn');
+    const backLabel = backBtn && backBtn.querySelector('.back-label');
+    if (!backBtn || !backLabel) return;
+
+    const navStack    = [];
+    let isGoingBack   = false;
+    let currentHash   = window.location.hash || '#/';
+
+    function updateButton() {
+      if (navStack.length > 0) {
+        backLabel.textContent = getLabel(navStack[navStack.length - 1]);
+        backBtn.classList.add('visible');
+        backBtn.removeAttribute('tabindex');
+      } else {
+        backBtn.classList.remove('visible');
+        backBtn.setAttribute('tabindex', '-1');
+      }
+    }
+
+    window.addEventListener('hashchange', () => {
+      const newHash = window.location.hash || '#/';
+      if (isGoingBack) { isGoingBack = false; currentHash = newHash; updateButton(); return; }
+      if (newHash !== currentHash) { navStack.push(currentHash); currentHash = newHash; }
+      updateButton();
+    });
+
+    backBtn.addEventListener('click', () => {
+      if (!navStack.length) return;
+      isGoingBack = true;
+      window.location.hash = navStack.pop();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      const content = document.getElementById('app-content');
+      if (content) { content.setAttribute('tabindex', '-1'); content.focus({ preventScroll: true }); }
+    });
+
+    updateButton();
   })();
 
   /* ─── Chat Button Stub ──────────────────────────────────────────── */
