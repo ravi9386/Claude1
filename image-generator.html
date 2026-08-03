@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Describe &rarr; Image</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --panel-2: #1e222b;
+    --border: #2a2f3a;
+    --text: #e8eaf0;
+    --muted: #9aa2b1;
+    --accent: #7c6cf0;
+    --accent-2: #46c1c9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: radial-gradient(circle at 20% 0%, #1a1d26 0%, var(--bg) 55%);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  header {
+    padding: 28px 24px 12px;
+    text-align: center;
+  }
+  header h1 {
+    margin: 0 0 6px;
+    font-size: 1.9rem;
+    letter-spacing: -0.02em;
+  }
+  header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 20px 20px 60px;
+    display: grid;
+    gap: 20px;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+  }
+  .composer {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  textarea {
+    width: 100%;
+    min-height: 90px;
+    resize: vertical;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    padding: 14px;
+    font-size: 0.98rem;
+    font-family: inherit;
+    line-height: 1.4;
+  }
+  textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  select, button {
+    font-family: inherit;
+    font-size: 0.92rem;
+  }
+  select {
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 10px;
+  }
+  button.primary {
+    margin-left: auto;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #0b0c10;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    padding: 11px 20px;
+    cursor: pointer;
+  }
+  button.primary:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+  button.ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 14px;
+    cursor: pointer;
+  }
+  button.ghost:hover { color: var(--text); border-color: var(--accent); }
+  .notice {
+    font-size: 0.82rem;
+    color: var(--muted);
+    background: var(--panel-2);
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  .stage {
+    display: flex;
+    justify-content: center;
+  }
+  canvas {
+    width: 100%;
+    max-width: 512px;
+    aspect-ratio: 1 / 1;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: #000;
+  }
+  .stage-empty {
+    width: 100%;
+    max-width: 512px;
+    aspect-ratio: 1 / 1;
+    border-radius: 12px;
+    border: 1px dashed var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 20px;
+  }
+  .gallery h2 {
+    font-size: 1rem;
+    margin: 0 0 12px;
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+  }
+  .thumb {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    background: #000;
+  }
+  .thumb img { width: 100%; display: block; aspect-ratio: 1/1; object-fit: cover; }
+  .thumb .caption {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 6px 8px;
+    font-size: 0.7rem;
+    color: #fff;
+    background: linear-gradient(to top, rgba(0,0,0,0.75), transparent);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .empty-gallery {
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.78rem;
+    padding-bottom: 30px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Describe &rarr; Image</h1>
+  <p>Type a description, get a generated image back.</p>
+</header>
+
+<main>
+  <section class="panel composer">
+    <textarea id="prompt" placeholder="e.g. a quiet lake at sunrise surrounded by pine trees"></textarea>
+    <div class="row">
+      <select id="style">
+        <option value="aurora">Aurora</option>
+        <option value="sunset">Sunset</option>
+        <option value="forest">Forest</option>
+        <option value="mono">Mono</option>
+        <option value="candy">Candy</option>
+      </select>
+      <button class="ghost" id="randomize">Surprise me</button>
+      <button class="primary" id="generate">Generate</button>
+    </div>
+    <div class="notice">
+      This demo renders a unique abstract image from your text on-canvas — it isn't a real AI image model.
+      Swap the <code>renderFromDescription()</code> function for a call to an image-generation API
+      (e.g. OpenAI's Images API) to produce photorealistic results.
+    </div>
+  </section>
+
+  <section class="panel stage">
+    <canvas id="canvas" width="512" height="512" style="display:none"></canvas>
+    <div class="stage-empty" id="stageEmpty">Your generated image will appear here</div>
+  </section>
+
+  <section class="panel gallery">
+    <h2>Gallery</h2>
+    <div class="grid" id="grid"></div>
+    <p class="empty-gallery" id="emptyGallery">Nothing generated yet.</p>
+  </section>
+</main>
+
+<footer>Placeholder image generator &middot; runs entirely in your browser, no data leaves the page.</footer>
+
+<script>
+(function () {
+  const promptEl = document.getElementById('prompt');
+  const styleEl = document.getElementById('style');
+  const generateBtn = document.getElementById('generate');
+  const randomizeBtn = document.getElementById('randomize');
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const stageEmpty = document.getElementById('stageEmpty');
+  const grid = document.getElementById('grid');
+  const emptyGallery = document.getElementById('emptyGallery');
+
+  const PALETTES = {
+    aurora: ['#2b1055', '#7c6cf0', '#46c1c9', '#0f2027'],
+    sunset: ['#ff5f6d', '#ffc371', '#3a1c71', '#d76d77'],
+    forest: ['#0b3d2e', '#3c8f66', '#a8d5ba', '#1b5e3a'],
+    mono:   ['#111111', '#444444', '#999999', '#eeeeee'],
+    candy:  ['#ff70a6', '#ff9770', '#ffd670', '#70d6ff']
+  };
+
+  const samplePrompts = [
+    'a lighthouse on a rocky cliff during a storm',
+    'a city skyline reflected in wet pavement at night',
+    'a field of sunflowers under a clear blue sky',
+    'an old library with towering bookshelves',
+    'a dragon curled around a mountain peak',
+    'a cup of coffee steaming on a wooden table'
+  ];
+
+  function hashString(str) {
+    let h = 2166136261;
+    for (let i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+
+  function mulberry32(seed) {
+    return function () {
+      seed |= 0;
+      seed = (seed + 0x6D2B79F5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function renderFromDescription(description, styleKey) {
+    const seed = hashString(description.trim().toLowerCase() || 'blank canvas');
+    const rand = mulberry32(seed);
+    const palette = PALETTES[styleKey] || PALETTES.aurora;
+    const w = canvas.width, h = canvas.height;
+
+    // Background gradient
+    const grad = ctx.createLinearGradient(0, 0, w, h);
+    grad.addColorStop(0, palette[0]);
+    grad.addColorStop(1, palette[1]);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+
+    // Layered translucent shapes, count/position/color derived from the text
+    const shapeCount = 8 + Math.floor(rand() * 10);
+    for (let i = 0; i < shapeCount; i++) {
+      const cx = rand() * w;
+      const cy = rand() * h;
+      const r = 30 + rand() * (w * 0.35);
+      const color = palette[Math.floor(rand() * palette.length)];
+      ctx.globalAlpha = 0.12 + rand() * 0.25;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+
+      const shapeType = rand();
+      if (shapeType < 0.4) {
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      } else if (shapeType < 0.7) {
+        const sides = 3 + Math.floor(rand() * 4);
+        ctx.moveTo(cx + r * Math.cos(0), cy + r * Math.sin(0));
+        for (let s = 1; s <= sides; s++) {
+          const angle = (s / sides) * Math.PI * 2;
+          ctx.lineTo(cx + r * Math.cos(angle), cy + r * Math.sin(angle));
+        }
+        ctx.closePath();
+      } else {
+        ctx.ellipse(cx, cy, r, r * (0.4 + rand() * 0.6), rand() * Math.PI, 0, Math.PI * 2);
+      }
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // Fine grain texture
+    const dots = 250;
+    for (let i = 0; i < dots; i++) {
+      ctx.globalAlpha = 0.04 + rand() * 0.04;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(rand() * w, rand() * h, 1.5, 1.5);
+    }
+    ctx.globalAlpha = 1;
+
+    // Subtle vignette
+    const vg = ctx.createRadialGradient(w/2, h/2, w*0.2, w/2, h/2, w*0.7);
+    vg.addColorStop(0, 'rgba(0,0,0,0)');
+    vg.addColorStop(1, 'rgba(0,0,0,0.35)');
+    ctx.fillStyle = vg;
+    ctx.fillRect(0, 0, w, h);
+
+    return canvas.toDataURL('image/png');
+  }
+
+  function addToGallery(dataUrl, description) {
+    emptyGallery.style.display = 'none';
+    const thumb = document.createElement('div');
+    thumb.className = 'thumb';
+    thumb.innerHTML = '<img src="' + dataUrl + '" alt="' + description.replace(/"/g, '&quot;') + '">' +
+      '<div class="caption">' + description + '</div>';
+    thumb.addEventListener('click', function () {
+      canvas.toDataURL(); // no-op, kept for clarity
+      const img = new Image();
+      img.onload = function () {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      };
+      img.src = dataUrl;
+      canvas.style.display = 'block';
+      stageEmpty.style.display = 'none';
+    });
+    grid.prepend(thumb);
+  }
+
+  function generate() {
+    const description = promptEl.value.trim();
+    if (!description) {
+      promptEl.focus();
+      promptEl.placeholder = 'Type something first…';
+      return;
+    }
+    const dataUrl = renderFromDescription(description, styleEl.value);
+    canvas.style.display = 'block';
+    stageEmpty.style.display = 'none';
+    addToGallery(dataUrl, description);
+  }
+
+  generateBtn.addEventListener('click', generate);
+  promptEl.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) generate();
+  });
+  randomizeBtn.addEventListener('click', function () {
+    promptEl.value = samplePrompts[Math.floor(Math.random() * samplePrompts.length)];
+  });
+})();
+</script>
+
+</body>
+</html>
