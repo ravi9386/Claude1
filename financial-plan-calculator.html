@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Financial Plan Calculator</title>
+<style>
+  :root { --bg:#faf8f4; --panel:#fff; --ink:#1c1d1f; --soft:#55565c; --line:#e6e2d9; --accent:#0b6e4f; --bad:#b3261e; --good:#0b6e4f; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#16171a; --panel:#1f2024; --ink:#f1efe9; --soft:#a5a7ad; --line:#33353b; --accent:#4cc9a0; --bad:#ff8a80; --good:#4cc9a0; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:32px 16px 64px; }
+  a.back { color:var(--soft); font-size:.9rem; text-decoration:none; }
+  h1 { margin:8px 0 4px; font-size:1.9rem; }
+  .lead { color:var(--soft); margin:0 0 24px; }
+  .layout { display:grid; grid-template-columns:320px 1fr; gap:20px; align-items:start; }
+  @media (max-width:780px) { .layout { grid-template-columns:1fr; } }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:20px; }
+  label { display:block; font-size:.82rem; color:var(--soft); margin:12px 0 4px; }
+  label:first-child { margin-top:0; }
+  input { width:100%; padding:9px 10px; font:inherit; color:var(--ink); background:var(--bg); border:1px solid var(--line); border-radius:8px; }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .row > div > label { margin-top:12px; }
+  .row:first-child > div > label { margin-top:0; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin-bottom:16px; }
+  .stat { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+  .stat span { display:block; font-size:.78rem; color:var(--soft); }
+  .stat b { font-size:1.35rem; }
+  #verdict { padding:12px 14px; border-radius:10px; margin-bottom:16px; font-weight:500; border:1px solid var(--line); background:var(--panel); }
+  #verdict.ok { color:var(--good); border-color:var(--good); } #verdict.short { color:var(--bad); border-color:var(--bad); }
+  svg { width:100%; height:auto; display:block; }
+  .note { font-size:.8rem; color:var(--soft); margin:14px 0 0; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="tinkering.html">← My Tinkering</a>
+  <h1>Financial Plan Calculator</h1>
+  <p class="lead">Estimate whether your savings will fund your retirement. Amounts are in today's money unless stated.</p>
+  <div class="layout">
+    <form class="panel" id="f" oninput="calc()" onsubmit="return false">
+      <div class="row">
+        <div><label>Current age</label><input id="age" type="number" value="35" min="18" max="90"></div>
+        <div><label>Retirement age</label><input id="ret" type="number" value="60" min="19" max="95"></div>
+      </div>
+      <label>Plan until age</label><input id="end" type="number" value="90" min="50" max="110">
+      <label>Current savings</label><input id="sav" type="number" value="500000" min="0">
+      <label>Monthly saving now</label><input id="mon" type="number" value="2000" min="0">
+      <label>Yearly increase in saving (%)</label><input id="step" type="number" value="5" step="0.5" min="0">
+      <label>Monthly spending in retirement (today's money)</label><input id="spend" type="number" value="4000" min="0">
+      <div class="row">
+        <div><label>Return before retirement (%)</label><input id="r1" type="number" value="9" step="0.5"></div>
+        <div><label>Return after retirement (%)</label><input id="r2" type="number" value="6" step="0.5"></div>
+      </div>
+      <label>Inflation (%)</label><input id="inf" type="number" value="4" step="0.5" min="0">
+    </form>
+    <div>
+      <div id="verdict"></div>
+      <div class="stats">
+        <div class="stat"><span>Corpus at retirement</span><b id="s1"></b></div>
+        <div class="stat"><span>Corpus needed</span><b id="s2"></b></div>
+        <div class="stat"><span>Monthly spending at retirement</span><b id="s3"></b></div>
+        <div class="stat"><span>Extra monthly saving needed</span><b id="s4"></b></div>
+      </div>
+      <div class="panel"><svg id="chart" viewBox="0 0 600 260" role="img" aria-label="Projected balance by age"></svg>
+      <p class="note">Estimates only, not financial advice. Assumes constant returns and inflation, monthly compounding, and withdrawals at the start of each month.</p></div>
+    </div>
+  </div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const v = id => parseFloat($(id).value) || 0;
+const fmt = n => Math.round(n).toLocaleString();
+
+// Simulate month by month; returns balances by age and the corpus at retirement.
+function simulate(p, extra) {
+  const m1 = Math.pow(1 + p.r1, 1/12) - 1, m2 = Math.pow(1 + p.r2, 1/12) - 1;
+  let bal = p.sav, pts = [[p.age, bal]], atRet = bal;
+  for (let a = p.age; a < p.end; a++) {
+    const working = a < p.ret;
+    for (let i = 0; i < 12; i++) {
+      if (working) bal = (bal + p.mon * Math.pow(1 + p.step, a - p.age) + extra) * (1 + m1);
+      else bal = Math.max(0, bal - p.spendRet * Math.pow(1 + p.inf, a - p.ret)) * (1 + m2);
+    }
+    if (a + 1 === p.ret) atRet = bal;
+    pts.push([a + 1, bal]);
+  }
+  return { pts, atRet };
+}
+
+function calc() {
+  const p = { age:v('age'), ret:v('ret'), end:v('end'), sav:v('sav'), mon:v('mon'), step:v('step')/100,
+              r1:v('r1')/100, r2:v('r2')/100, inf:v('inf')/100 };
+  p.spendRet = v('spend') * Math.pow(1 + p.inf, Math.max(0, p.ret - p.age));
+  if (!(p.end > p.ret && p.ret > p.age)) { $('verdict').className = 'short'; $('verdict').textContent = 'Check ages: current < retirement < plan-until.'; return; }
+
+  const base = simulate(p, 0);
+  // Corpus needed at retirement = PV of inflating withdrawals (start of each month) at the post-retirement return.
+  const m2 = Math.pow(1 + p.r2, 1/12) - 1; let need = 0;
+  for (let a = p.ret; a < p.end; a++) for (let i = 0; i < 12; i++) {
+    need += p.spendRet * Math.pow(1 + p.inf, a - p.ret) / Math.pow(1 + m2, (a - p.ret) * 12 + i);
+  }
+  // Extra monthly saving needed: binary search on a flat extra amount.
+  let extra = 0;
+  if (base.atRet < need) {
+    let lo = 0, hi = need / 12;
+    for (let i = 0; i < 60; i++) { const mid = (lo + hi) / 2; simulate(p, mid).atRet < need ? lo = mid : hi = mid; }
+    extra = hi;
+  }
+  const last = base.pts[base.pts.length - 1][1];
+  const depleted = base.pts.find(q => q[0] > p.ret && q[1] <= 0);
+  const ok = !depleted;
+  $('verdict').className = ok ? 'ok' : 'short';
+  $('verdict').textContent = ok
+    ? 'On track: savings last past age ' + p.end + ', ending with about ' + fmt(last) + '.'
+    : 'Shortfall: savings run out around age ' + depleted[0] + '. See the extra saving needed.';
+  $('s1').textContent = fmt(base.atRet);
+  $('s2').textContent = fmt(need);
+  $('s3').textContent = fmt(p.spendRet);
+  $('s4').textContent = fmt(extra);
+  draw(base.pts, p.ret);
+}
+
+function draw(pts, ret) {
+  const W = 600, H = 260, L = 60, B = 28, T = 10, R = 10;
+  const x0 = pts[0][0], x1 = pts[pts.length - 1][0], max = Math.max(...pts.map(q => q[1]), 1);
+  const X = a => L + (a - x0) / (x1 - x0) * (W - L - R), Y = b => H - B - b / max * (H - B - T);
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n);
+  let s = '';
+  for (let i = 0; i <= 4; i++) {
+    const b = max * i / 4, y = Y(b);
+    s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y + '" y2="' + y + '" stroke="' + css('--line') + '"/>' +
+         '<text x="' + (L - 6) + '" y="' + (y + 4) + '" text-anchor="end" font-size="10" fill="' + css('--soft') + '">' +
+         (b >= 1e6 ? (b / 1e6).toFixed(1) + 'M' : Math.round(b / 1e3) + 'k') + '</text>';
+  }
+  for (let a = Math.ceil(x0 / 10) * 10; a <= x1; a += 10)
+    s += '<text x="' + X(a) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="10" fill="' + css('--soft') + '">' + a + '</text>';
+  s += '<line x1="' + X(ret) + '" x2="' + X(ret) + '" y1="' + T + '" y2="' + (H - B) + '" stroke="' + css('--soft') + '" stroke-dasharray="4 4"/>' +
+       '<text x="' + (X(ret) + 4) + '" y="' + (T + 10) + '" font-size="10" fill="' + css('--soft') + '">Retire</text>';
+  s += '<polyline fill="none" stroke="' + css('--accent') + '" stroke-width="2.5" points="' + pts.map(q => X(q[0]) + ',' + Y(q[1])).join(' ') + '"/>';
+  $('chart').innerHTML = s;
+}
+calc();
+</script>
+</body>
+</html>
