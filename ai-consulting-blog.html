@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Beyond the Deck — Notes on AI in Consulting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink: #1c1d1f;
+    --ink-soft: #55565c;
+    --paper: #faf8f4;
+    --panel: #ffffff;
+    --border: #e7e3da;
+    --accent: #2f4a46;
+    --accent-soft: #e4ece9;
+    --tag-text: #4a6a63;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.6;
+  }
+  h1, h2, h3, h4 { font-family: 'Lora', serif; line-height: 1.25; margin: 0; }
+  a { color: inherit; }
+  p { margin: 0 0 1rem; }
+  p:last-child { margin-bottom: 0; }
+
+  /* ── Header ───────────────────────────────────────── */
+  header.site {
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .site-inner {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 20px 24px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .brand {
+    font-family: 'Lora', serif;
+    font-weight: 700;
+    font-size: 1.3rem;
+    text-decoration: none;
+    letter-spacing: -0.01em;
+  }
+  .brand span { color: var(--accent); }
+  .tagline {
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    letter-spacing: 0.02em;
+  }
+
+  main { max-width: 880px; margin: 0 auto; padding: 0 24px 100px; }
+
+  /* ── Carousel (list page) ─────────────────────────── */
+  .carousel {
+    position: relative;
+    margin: 28px 0 0;
+    border-radius: 10px;
+    overflow: hidden;
+    height: 320px;
+  }
+  .carousel-track {
+    display: flex;
+    height: 100%;
+    transition: transform 450ms ease;
+  }
+  .carousel-slide {
+    flex: 0 0 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: flex-end;
+    text-decoration: none;
+  }
+  .carousel-slide-content { padding: 28px 32px; max-width: 640px; }
+  .carousel-slide-content .post-meta { margin-bottom: 10px; }
+  .carousel-slide-content h2 { font-size: 1.5rem; color: #fff; line-height: 1.3; }
+  .carousel-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.85);
+    color: var(--ink);
+    border: none;
+    font-size: 1.3rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 150ms ease;
+  }
+  .carousel-arrow:hover { background: #fff; }
+  .carousel-prev { left: 14px; }
+  .carousel-next { right: 14px; }
+  .carousel-dots {
+    position: absolute;
+    bottom: 14px;
+    right: 20px;
+    display: flex;
+    gap: 6px;
+  }
+  .carousel-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.5);
+    cursor: pointer;
+    transition: background 150ms ease, transform 150ms ease;
+    border: none;
+    padding: 0;
+  }
+  .carousel-dot.active { background: #fff; transform: scale(1.3); }
+
+  /* ── Hero (list page) ─────────────────────────────── */
+  .hero {
+    padding: 56px 0 40px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 40px;
+  }
+  .hero h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin-bottom: 14px; }
+  .hero p { color: var(--ink-soft); font-size: 1.05rem; max-width: 620px; }
+
+  /* ── Post list ────────────────────────────────────── */
+  .post-list { display: flex; flex-direction: column; gap: 0; }
+  .post-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    padding: 28px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .post-card:first-child { padding-top: 0; }
+  .post-meta {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .post-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--ink-soft); }
+  .tag {
+    display: inline-block;
+    background: var(--accent-soft);
+    color: var(--tag-text);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 100px;
+  }
+  .post-card h2 {
+    font-size: 1.45rem;
+    margin-bottom: 10px;
+    transition: color 150ms ease;
+  }
+  .post-card:hover h2 { color: var(--accent); }
+  .post-card .excerpt { color: var(--ink-soft); font-size: 0.97rem; max-width: 680px; }
+  .read-more {
+    display: inline-block;
+    margin-top: 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+  }
+
+  /* ── Post detail ──────────────────────────────────── */
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+    text-decoration: none;
+    margin: 32px 0 28px;
+    cursor: pointer;
+  }
+  .back-link:hover { color: var(--accent); }
+  article.post h1 {
+    font-size: clamp(1.9rem, 4.5vw, 2.7rem);
+    margin-bottom: 18px;
+  }
+  article.post .post-meta { margin-bottom: 28px; }
+  article.post .excerpt-lead {
+    font-size: 1.15rem;
+    color: var(--ink-soft);
+    margin-bottom: 32px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+  }
+  article.post .body h3 {
+    font-size: 1.3rem;
+    margin: 36px 0 14px;
+  }
+  article.post .body p { font-size: 1.02rem; margin-bottom: 18px; }
+  article.post .body ul, article.post .body ol { margin: 0 0 18px; padding-left: 22px; }
+  article.post .body li { margin-bottom: 8px; font-size: 1.02rem; }
+  article.post .body blockquote {
+    margin: 32px 0;
+    padding: 4px 0 4px 22px;
+    border-left: 3px solid var(--accent);
+    font-family: 'Lora', serif;
+    font-style: italic;
+    font-size: 1.2rem;
+    color: var(--ink);
+  }
+  .byline {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 48px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+  }
+  .byline .avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Lora', serif; font-weight: 600; font-size: 0.95rem;
+    flex-shrink: 0;
+  }
+  .byline strong { color: var(--ink); }
+
+  .more-posts { margin-top: 56px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .more-posts h4 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); margin-bottom: 18px; }
+
+  footer.site {
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+    padding: 28px 24px 40px;
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+  }
+  footer.site a { color: var(--accent); text-decoration: none; font-weight: 600; }
+
+  @media (max-width: 600px) {
+    .hero { padding: 40px 0 28px; }
+    .carousel { height: 220px; }
+    .carousel-slide-content { padding: 18px 20px; }
+    .carousel-slide-content h2 { font-size: 1.15rem; }
+  }
+</style>
+</head>
+<body>
+  <header class="site">
+    <div class="site-inner">
+      <a href="#/" class="brand" onclick="navigate('#/')">Beyond the <span>Deck</span></a>
+      <span class="tagline">Field notes on AI in consulting, from inside the work</span>
+    </div>
+  </header>
+
+  <main id="app"></main>
+
+  <footer class="site">
+    Written by Ravi Verma · <a href="index.html">vermawisdom.com</a>
+  </footer>
+
+<script>
+const POSTS = [
+  {
+    slug: 'ai-company-valuations-roi-timeline',
+    title: 'AI Company Valuations Are Pricing In an ROI Curve Nobody Has Walked Yet',
+    date: '2026-10-16',
+    tags: ['Valuation', 'Markets'],
+    readTime: '7 min read',
+    image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1600&q=80',
+    excerpt: "Public and private AI valuations assume enterprise ROI arrives on a software-adoption timeline. Everything happening inside client organizations right now says the real timeline is longer — and the gap is where the next repricing comes from.",
+    body: `
+      <p>Price an AI company today and you are, whether the model admits it or not, making a bet about speed: how fast enterprises will adopt, how fast that adoption turns into measurable productivity or revenue, and how fast that value flows back as revenue to the company being priced. Compress that timeline in your head by eighteen months and a valuation looks justified. Stretch it back out to what's actually happening inside client organizations, and the same valuation looks like it's pricing in a future that keeps receding.</p>
+      <p>That gap — between the adoption curve Wall Street and venture markets are underwriting and the adoption curve actually playing out inside large organizations — is the single most important thing happening in AI valuations right now, and it's getting almost no attention relative to the next model release.</p>
+      <h3>The curve being priced in</h3>
+      <p>Valuation multiples on AI-exposed companies, foundation model labs included, largely assume something close to a software adoption curve: a sharp S-curve where enterprise spend ramps within a few budget cycles, because the product is "just" a subscription or an API call away from being live. That assumption made sense for SaaS, where the main friction was procurement and integration was often weeks, not years.</p>
+      <p>It does not hold for the category of AI deployments that actually move an income statement. Those deployments sit inside workflows that touch regulated data, legacy systems, and human processes that were never designed to be rewired quickly — which is a very different adoption curve from "the team signed a license and logged in."</p>
+      <blockquote>A valuation model that treats enterprise AI adoption like a SaaS seat expansion is quietly assuming away the exact problems that determine whether the value shows up at all.</blockquote>
+      <h3>Why the realization timeline keeps slipping</h3>
+      <ul>
+        <li><strong>The pilot-to-production gap is real and it is structural.</strong> The same dynamics that strand GenAI pilots before they scale — unowned post-pilot operations, unresolved data governance, no budgeted change management — don't just delay a single project. Multiplied across a portfolio of initiatives, they delay the entire enterprise P&L impact investors are underwriting.</li>
+        <li><strong>Procurement and risk review cycles haven't gotten faster.</strong> Security review, model risk assessment, and legal sign-off for anything touching customer or regulated data routinely take two to four quarters at large institutions — a cycle time that hasn't compressed just because the underlying technology improved.</li>
+        <li><strong>Attribution is genuinely hard.</strong> Even where AI tools are in use and clearly helping, isolating the dollar impact from everything else moving in a large organization at the same time is a measurement problem most finance functions aren't yet equipped to solve cleanly — which means the ROI exists but is slow to show up in a form a board will cite.</li>
+        <li><strong>The organization has to change shape, not just tooling.</strong> Realizing the productivity gain often requires redesigning a role or a process, not just handing the existing role a new tool — and headcount and process redesign move on an HR and change-management clock, not a product-release clock.</li>
+      </ul>
+      <h3>The historical pattern this rhymes with</h3>
+      <p>Every prior general-purpose technology wave — the PC, the internet, cloud, mobile — shows the same shape: capital markets price in the value years before operational reality delivers it, there's a painful repricing in the middle when the gap becomes undeniable, and the value does eventually show up, on a longer and lumpier timeline than the first round of enthusiasm assumed. Cloud computing is the closest analogue: real, large, durable value — delivered on a timeline measured in a decade of enterprise migration, not the few years early forecasts assumed.</p>
+      <p>Nothing about the current AI cycle suggests enterprises have gotten structurally faster at digesting transformative technology since the last cycle. If anything, the surface area is larger — AI touches more processes, more data categories, and more regulatory exposure than cloud migration did, which argues for a longer digestion period, not a shorter one.</p>
+      <h3>What this means for how AI investment should be underwritten</h3>
+      <ul>
+        <li><strong>Stage-gate the capital, not just the pilot.</strong> Treat enterprise AI spend like a venture portfolio — staged funding tied to evidence of production-readiness, not a single annual budget line sized to the optimistic case.</li>
+        <li><strong>Underwrite the payback period in years, not quarters, for anything touching core workflows.</strong> The exceptions — narrow, well-bounded, low-risk use cases — can and do pay back fast. The transformative, P&L-moving use cases almost never do, on current evidence.</li>
+        <li><strong>Separate "the technology works" from "we can realize the value" as distinct risks.</strong> Capital markets are mostly underwriting the first risk, which is genuinely resolving quickly. The second risk — organizational, procedural, human — is resolving slowly, and it's the one that determines whether the revenue shows up on schedule.</li>
+      </ul>
+      <p>None of this is an argument that the technology isn't real or that the long-run value isn't there — the prior essays on this site are an argument that it clearly is. It's an argument that the market's clock and the client organization's clock are running at different speeds, and the companies and investors who price that gap honestly are going to look a great deal smarter in three years than the ones who didn't.</p>
+    `
+  },
+  {
+    slug: 'why-genai-pilots-never-scale',
+    title: 'Why Most GenAI Pilots Never Scale',
+    date: '2026-09-12',
+    tags: ['Strategy', 'Change Management'],
+    readTime: '6 min read',
+    image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1600&q=80',
+    excerpt: 'Dozens of GenAI pilots launch inside large organizations every quarter. Almost none of them survive contact with production. The reason is rarely the model.',
+    body: `
+      <p>Walk into almost any large enterprise today and you'll find a GenAI pilot somewhere — a chatbot prototype in procurement, a summarization tool in legal, a copilot bolted onto a CRM. Walk back in eighteen months later, and most of them are gone. Not because the technology failed, but because the pilot was never built to survive outside the sandbox it was born in.</p>
+      <p>After sitting through enough of these programs, a pattern becomes hard to ignore: the pilots that die were almost always evaluated on the wrong question. The question asked was "can this work?" The question that actually determines survival is "can this run without the three people who built it?"</p>
+      <h3>The data debt shows up late, not early</h3>
+      <p>A pilot usually runs on a curated, cleaned, hand-picked slice of data — the version of reality the project team had time to prepare. Production doesn't offer that courtesy. The moment a tool touches live, messy, inconsistently-governed data across business units, accuracy drops, trust drops with it, and the business sponsor who championed the pilot quietly stops mentioning it in steering committee updates.</p>
+      <p>This is not an AI problem. It is the same data quality and governance debt that has sunk BI programs and analytics transformations for twenty years, wearing a new costume.</p>
+      <h3>Nobody budgeted for the boring half</h3>
+      <p>The flashy half of a GenAI build — prompt design, model selection, a slick demo — gets the budget and the executive attention. The boring half — access controls, audit logging, fallback behavior when the model is wrong, a process for who fixes it when it breaks — gets an afterthought line item, if it gets one at all. Scaling is almost entirely made of the boring half.</p>
+      <blockquote>A pilot proves a capability exists. Scaling proves an organization can be trusted to operate it.</blockquote>
+      <h3>Ownership gets fuzzy exactly when it matters</h3>
+      <p>During the pilot, ownership is obvious: the project team owns it. Post-pilot, it needs a permanent home — a product owner, a budget line, an SLA, a team that gets paged when it breaks at 2am. That home rarely exists on day one, and building it is a harder conversation than building the model ever was, because it touches headcount, cost centers, and who gets blamed when something goes wrong.</p>
+      <h3>What tends to separate the pilots that scale</h3>
+      <ul>
+        <li><strong>They name an owner before they name a model.</strong> A permanent, funded owner for the capability is secured before the pilot even starts, not negotiated after it succeeds.</li>
+        <li><strong>They test on the data nobody wants to clean.</strong> The pilot is deliberately run against the messiest, most representative slice of real data available — not the easy subset — so the accuracy numbers mean something.</li>
+        <li><strong>They design for the failure case, not just the happy path.</strong> What the tool does when it's wrong, uncertain, or down is specified with as much care as what it does when it's right.</li>
+        <li><strong>They budget change management at the same size as the build.</strong> Adoption is treated as an engineering problem with its own workstream, not a training deck shipped in week eleven.</li>
+      </ul>
+      <p>None of this is exotic. It is the same discipline that separated successful ERP rollouts from failed ones, ported to a new technology. The firms and functions getting real, durable value from GenAI right now are not the ones with the most advanced model. They're the ones who stopped treating the pilot as the finish line.</p>
+    `
+  },
+  {
+    slug: 'consultants-using-ai-will-replace-those-who-dont',
+    title: "AI Won't Replace Consultants — But Consultants Using AI Will Replace Those Who Don't",
+    date: '2026-08-28',
+    tags: ['Careers', 'Productivity'],
+    readTime: '5 min read',
+    image: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=1600&q=80',
+    excerpt: 'The anxiety in consulting right now is pointed at the wrong target. The real risk to a career isn\'t a model — it\'s a colleague who figured out leverage six months before you did.',
+    body: `
+      <p>Every few months a new wave of "AI will replace consultants" takes a lap around the industry. It's the wrong fear, aimed at the wrong thing. The honest version of the statement is narrower and more uncomfortable: AI will replace the parts of consulting that were never really the job in the first place.</p>
+      <h3>What was never the job</h3>
+      <p>A huge amount of junior and mid-level consulting time has historically gone into work that looks like expertise but is actually just friction — reformatting the same findings into a different template for the third stakeholder, manually reconciling three versions of a spreadsheet, writing the first pass of a slide nobody will remember, summarizing a 90-minute call for people who were on the call. None of that work builds judgment. It was tolerated because there was no cheaper way to get it done.</p>
+      <p>That excuse is gone. A model can produce the first-draft slide, the clean reconciliation, the call summary, in minutes, at a quality that used to take a staffed-up team an evening. The work that remains after you strip that out is the work that was always the actual value a consultant provides: judgment under ambiguity, the ability to read a room and know what the client isn't saying, the credibility to tell a CEO something they don't want to hear.</p>
+      <blockquote>AI is very good at producing an answer. It is not good at knowing which question the client actually needs answered.</blockquote>
+      <h3>Where the leverage is real right now</h3>
+      <ul>
+        <li><strong>Research synthesis.</strong> Turning twenty interview transcripts or a stack of annual reports into a structured first view, in hours instead of days — leaving the consultant's time for deciding what the synthesis means.</li>
+        <li><strong>Scenario and sensitivity modeling.</strong> Running the fifth and sixth "what if" variant that would never have made it into a time-boxed engagement before, because it was too expensive to build by hand.</li>
+        <li><strong>Drafting against a point of view.</strong> Producing a competent first draft once a human has supplied the actual argument — the difference between AI as ghostwriter and AI as author.</li>
+        <li><strong>Pressure-testing your own thinking.</strong> Using a model as a deliberately difficult sparring partner to find the holes in a recommendation before a client does.</li>
+      </ul>
+      <h3>Where it quietly fails</h3>
+      <p>It fails at anything that requires actually being in the room: reading that the CFO's objection isn't about the number, it's about not having been consulted; knowing that a recommendation is technically correct but will get the sponsor fired if proposed this quarter; building the kind of trust that makes a client call you before a crisis instead of after one. No model does that. No model is being asked to.</p>
+      <h3>The actual career risk</h3>
+      <p>The risk isn't a model taking a consultant's seat. It's a peer who used the hours a model freed up to go deeper on the client relationship, think harder about the recommendation, and show up to the meeting having already stress-tested the idea three times — while someone else spent those same hours formatting a deck by hand, out of habit. Leverage compounds quietly. By the time it's visible in a promotion cycle, the gap is already old.</p>
+    `
+  },
+  {
+    slug: 'new-consulting-pricing-model-ai',
+    title: 'The New Consulting Pricing Model in an AI World',
+    date: '2026-07-19',
+    tags: ['Business Model', 'Pricing'],
+    readTime: '7 min read',
+    image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1600&q=80',
+    excerpt: 'Time-and-materials pricing was always a proxy for value, not value itself. AI is the thing finally forcing the industry to notice the difference.',
+    body: `
+      <p>The consulting industry has billed by the hour for so long that it's easy to forget the hour was always a stand-in for something else — a rough proxy for effort, which was itself a rough proxy for value delivered. It worked reasonably well when effort and value were loosely correlated: harder problems took more hours, more hours meant more invoice, client and firm both accepted the approximation.</p>
+      <p>AI breaks the correlation in a very specific way. It doesn't make the hard problems easier to solve — the judgment calls, the stakeholder navigation, the actual thinking are untouched. It makes the supporting labor around those problems dramatically cheaper: the research, the modeling, the drafting, the formatting. When the supporting labor collapses toward zero cost but the client's perceived value of the outcome doesn't move, billing by the hour starts to actively punish efficiency. A firm that uses AI well delivers the same outcome in a third of the time — and bills a third as much, for doing better work.</p>
+      <blockquote>Every hour a firm saves with AI under a time-and-materials contract is an hour of revenue a firm also loses.</blockquote>
+      <h3>Why this incentive problem is already visible</h3>
+      <p>Clients are not naive about this. Procurement functions that have spent a decade negotiating rate cards are starting to ask, reasonably, why a deliverable that visibly took a fraction of the staffing it used to still carries the old price tag. That question is uncomfortable for firms still staffed and priced around 2015-era effort assumptions, and it is only going to get louder.</p>
+      <h3>The models that are actually emerging</h3>
+      <ul>
+        <li><strong>Outcome-based pricing.</strong> Price tied to a defined result — cost saved, revenue unlocked, a system successfully migrated — rather than hours logged. This has existed at the edges of consulting for years; AI-driven efficiency is pushing it toward the center, because it's now the only structure that rewards a firm for being fast instead of penalizing it.</li>
+        <li><strong>Subscription / retainer advisory.</strong> A fixed monthly fee for ongoing access to a team plus its AI-augmented tooling, instead of a one-off project — closer to how software is sold than how consulting traditionally has been.</li>
+        <li><strong>Tiered deliverable pricing.</strong> A flat price per deliverable type (a market sizing, a competitive teardown, a first-draft operating model) calibrated to the new, AI-assisted cost of producing it — transparent, and far easier for procurement to benchmark.</li>
+        <li><strong>Hybrid models.</strong> A reduced baseline fee for the AI-accelerated commodity work, with premium pricing reserved explicitly for the judgment-heavy layer — strategy calls, stakeholder alignment, final recommendations — priced as what it actually is: scarce expertise, not time.</li>
+      </ul>
+      <h3>What doesn't go away</h3>
+      <p>None of this means consulting fees fall to zero, because the thing clients are actually paying for was never purely the hours — it was the judgment, the accountability, and the willingness to put a firm's name behind a hard recommendation. That part doesn't get commoditized by a language model. What AI does is force an honest separation between the part of the fee that was paying for labor and the part that was paying for expertise, and firms that haven't made that separation explicit in their own pricing are going to have it made for them, by a client who's done the math first.</p>
+    `
+  },
+  {
+    slug: 'where-ai-earns-its-keep-in-client-delivery',
+    title: 'Where AI Actually Earns Its Keep in Client Delivery',
+    date: '2026-06-30',
+    tags: ['Delivery', 'Practical'],
+    readTime: '6 min read',
+    image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1600&q=80',
+    excerpt: 'A practical, unglamorous map of where AI tools genuinely change the economics of a consulting engagement — and where they are, today, mostly noise.',
+    body: `
+      <p>Most conversations about AI and consulting stay at the strategy-deck altitude — "transformative," "paradigm shift," "every workflow will change." Useful for a keynote, not very useful for a delivery lead deciding where to actually point a team's time this quarter. A more honest map looks smaller, and more boring, than the keynote version.</p>
+      <h3>Where it genuinely changes the economics</h3>
+      <ul>
+        <li><strong>First-pass research synthesis.</strong> Collapsing a stack of interview transcripts, annual reports, or regulatory filings into a structured summary is close to a solved problem now. The gain isn't that the summary is perfect — it's that a human reviewing and correcting a draft is faster than a human building one from a blank page.</li>
+        <li><strong>Data cleaning and reconciliation grunt work.</strong> Matching inconsistent naming conventions across three client systems, flagging outliers, standardizing formats — the unglamorous 60% of an analytics workstream that used to eat junior analyst time with no learning value attached to it.</li>
+        <li><strong>First-draft narrative.</strong> Once a senior team member has the actual point of view, turning that point of view into a competent first-draft slide or memo is a task AI does well, freeing the human for the edit pass where the real thinking happens.</li>
+        <li><strong>Scenario generation at scale.</strong> Building the eighth sensitivity case on a financial model — the one that would have been cut from scope for time — becomes cheap enough to just include.</li>
+        <li><strong>Internal QA and consistency checks.</strong> Catching the slide that contradicts the number three pages earlier, or the assumption that silently changed between two model tabs, is something models are quietly excellent at and humans are quietly bad at, because humans get tired and models don't.</li>
+      </ul>
+      <h3>Where it's mostly noise today</h3>
+      <ul>
+        <li><strong>Final client recommendations.</strong> Not because a model can't generate plausible-sounding advice, but because the value of a recommendation is inseparable from the accountability behind it, and a client isn't paying to be told something — they're paying for someone qualified to stand behind it.</li>
+        <li><strong>Stakeholder navigation.</strong> Knowing that the real blocker to a project isn't the technical design but a turf dispute between two VPs is read from tone, history, and relationships a model doesn't have access to.</li>
+        <li><strong>Novel, ambiguous problem framing.</strong> When a client doesn't yet know what question they're actually asking, the valuable work is the back-and-forth that finds the real problem — a process that depends on context a model wasn't given and often can't be given, because the client hasn't articulated it yet either.</li>
+        <li><strong>Anything where being wrong is expensive and hard to detect.</strong> Regulatory interpretation, high-stakes financial assumptions, anything where a confidently-wrong answer looks identical to a correct one until it's too late — these need a human in the loop whose job is specifically to be skeptical, not a tool optimized to sound fluent.</li>
+      </ul>
+      <blockquote>The useful dividing line isn't "hard versus easy" — it's "checkable versus not." AI earns its keep fastest on work where a human can verify the output quickly. It's riskiest exactly where verification is slow, expensive, or itself requires the expertise being replaced.</blockquote>
+      <p>The practical takeaway for a delivery lead isn't a philosophy — it's a staffing decision. Point AI at the checkable, high-volume, low-judgment layer of an engagement, protect the hours that frees up, and reinvest them in the parts of the work that were always the actual reason a client hired a person instead of buying a report off a shelf.</p>
+    `
+  }
+];
+
+function navigate(hash) { window.location.hash = hash; }
+
+let carouselIndex = 0;
+let carouselTimer = null;
+
+function renderCarousel() {
+  const slides = POSTS.slice(0, 5);
+  return `
+    <div class="carousel" id="carousel" onmouseenter="pauseCarousel()" onmouseleave="resumeCarousel()">
+      <div class="carousel-track" id="carousel-track">
+        ${slides.map(p => `
+          <a class="carousel-slide" href="#/post/${p.slug}" onclick="navigate('#/post/${p.slug}')" style="background-image:linear-gradient(to top, rgba(10,12,11,0.8) 0%, rgba(10,12,11,0.1) 55%, rgba(10,12,11,0.3) 100%), url('${p.image}');">
+            <div class="carousel-slide-content">
+              <div class="post-meta">
+                ${p.tags.map(t => `<span class="tag" style="background:rgba(255,255,255,0.2);color:#fff;">${t}</span>`).join('')}
+              </div>
+              <h2>${p.title}</h2>
+            </div>
+          </a>
+        `).join('')}
+      </div>
+      <button class="carousel-arrow carousel-prev" onclick="goToSlide(carouselIndex-1)" aria-label="Previous slide">&#8249;</button>
+      <button class="carousel-arrow carousel-next" onclick="goToSlide(carouselIndex+1)" aria-label="Next slide">&#8250;</button>
+      <div class="carousel-dots">
+        ${slides.map((_, i) => `<button class="carousel-dot ${i === 0 ? 'active' : ''}" onclick="goToSlide(${i})" aria-label="Go to slide ${i + 1}"></button>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function goToSlide(i) {
+  const track = document.getElementById('carousel-track');
+  if (!track) return;
+  const total = track.children.length;
+  carouselIndex = (i + total) % total;
+  track.style.transform = `translateX(-${carouselIndex * 100}%)`;
+  document.querySelectorAll('.carousel-dot').forEach((d, idx) => d.classList.toggle('active', idx === carouselIndex));
+}
+
+function startCarousel() {
+  clearInterval(carouselTimer);
+  carouselTimer = setInterval(() => goToSlide(carouselIndex + 1), 5000);
+}
+
+function pauseCarousel() { clearInterval(carouselTimer); }
+function resumeCarousel() { startCarousel(); }
+
+function fmtDate(iso) {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+}
+
+function initials(name) {
+  return name.split(' ').map(w => w[0]).join('').toUpperCase();
+}
+
+function renderList() {
+  document.getElementById('app').innerHTML = `
+    ${renderCarousel()}
+    <div class="hero">
+      <h1>Notes on AI in consulting</h1>
+      <p>Short, practical essays on where AI actually changes consulting delivery, pricing, and careers — written from inside client work, not from a vendor deck.</p>
+    </div>
+    <div class="post-list">
+      ${POSTS.map(p => `
+        <a class="post-card" href="#/post/${p.slug}" onclick="navigate('#/post/${p.slug}')">
+          <div class="post-meta">
+            ${p.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+            <span class="dot"></span>
+            <span>${fmtDate(p.date)}</span>
+            <span class="dot"></span>
+            <span>${p.readTime}</span>
+          </div>
+          <h2>${p.title}</h2>
+          <p class="excerpt">${p.excerpt}</p>
+          <span class="read-more">Read the post &rarr;</span>
+        </a>
+      `).join('')}
+    </div>
+  `;
+  carouselIndex = 0;
+  startCarousel();
+}
+
+function renderPost(slug) {
+  clearInterval(carouselTimer);
+  const post = POSTS.find(p => p.slug === slug);
+  const app = document.getElementById('app');
+  if (!post) {
+    app.innerHTML = `
+      <div style="padding:60px 0;text-align:center;">
+        <h2 style="margin-bottom:12px;">Post not found</h2>
+        <a class="back-link" href="#/" onclick="navigate('#/')">&larr; Back to all posts</a>
+      </div>`;
+    return;
+  }
+  const others = POSTS.filter(p => p.slug !== slug).slice(0, 2);
+  app.innerHTML = `
+    <a class="back-link" href="#/" onclick="navigate('#/')">&larr; All posts</a>
+    <article class="post">
+      <div class="post-meta">
+        ${post.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+        <span class="dot"></span>
+        <span>${fmtDate(post.date)}</span>
+        <span class="dot"></span>
+        <span>${post.readTime}</span>
+      </div>
+      <h1>${post.title}</h1>
+      <p class="excerpt-lead">${post.excerpt}</p>
+      <div class="body">${post.body}</div>
+      <div class="byline">
+        <div class="avatar">${initials('Ravi Verma')}</div>
+        <div><strong>Ravi Verma</strong> &nbsp;·&nbsp; Writes about AI, delivery, and the consulting business model</div>
+      </div>
+      ${others.length ? `
+        <div class="more-posts">
+          <h4>More from Beyond the Deck</h4>
+          <div class="post-list">
+            ${others.map(p => `
+              <a class="post-card" href="#/post/${p.slug}" onclick="navigate('#/post/${p.slug}')">
+                <div class="post-meta">
+                  ${p.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+                  <span class="dot"></span>
+                  <span>${p.readTime}</span>
+                </div>
+                <h2>${p.title}</h2>
+                <p class="excerpt">${p.excerpt}</p>
+              </a>
+            `).join('')}
+          </div>
+        </div>` : ''}
+    </article>
+  `;
+  window.scrollTo(0, 0);
+}
+
+function router() {
+  const hash = window.location.hash || '#/';
+  const postMatch = hash.match(/^#\/post\/(.+)$/);
+  if (postMatch) {
+    renderPost(decodeURIComponent(postMatch[1]));
+  } else {
+    renderList();
+  }
+}
+
+window.addEventListener('hashchange', router);
+router();
+</script>
+</body>
+</html>

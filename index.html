@@ -1470,6 +1470,7 @@
               <li><a href="#/">FAQs</a></li>
               <li><a href="#/">Store Locator</a></li>
               <li><a href="#/">Contact Us</a></li>
+              <li><a href="ai-consulting-blog.html">Journal: AI in Consulting</a></li>
             </ul>
           </div>
           <div class="footer-col">
@@ -2941,6 +2942,17 @@ function renderHome() {
         </div>
         <div onclick="navigate('#/cart')" style="display:inline-flex;align-items:center;gap:10px;background:var(--color-gold);color:#fff;padding:10px 22px;border-radius:4px;cursor:pointer;font-size:0.8rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;transition:opacity 200ms;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
           🎁 &nbsp;USE CODE <span style="background:rgba(255,255,255,0.25);padding:2px 8px;border-radius:3px;margin:0 4px;">BOGO</span> — BUY ONE GET ONE FREE
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 1.5: FEATURED BRANDS -->
+    <section style="padding:40px 24px;border-bottom:1px solid var(--color-border);">
+      <div style="max-width:1200px;margin:0 auto;">
+        <p style="text-align:center;font-size:0.75rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--color-text-muted);margin-bottom:28px;">Shop Your Favourite Brands</p>
+        <div style="display:flex;align-items:center;justify-content:center;gap:40px;flex-wrap:wrap;overflow-x:auto;padding-bottom:4px;" class="hide-scrollbar">
+          ${['Mango','Zara','COS','Arket','Whistles','Reiss','H&M','AllSaints'].map(b => `
+            <span onclick="window.SEARCH_QUERY='${b}';navigate('#/search');" style="font-family:'Playfair Display',serif;font-size:1.2rem;letter-spacing:0.03em;color:var(--color-primary);opacity:0.55;cursor:pointer;transition:opacity 200ms;white-space:nowrap;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.55'">${b}</span>`).join('')}
         </div>
       </div>
     </section>
